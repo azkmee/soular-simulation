@@ -150,30 +150,7 @@ panel_range = range(1,15)
 
 simulation_days = 5
 
-for cell in cell_range:
-    for panel in panel_range:
-        init_batt(cell)
 
-        perhour_charge=panel*200
-        
-        #48 intervals in a day. One frame for charging, the other for discharging
-        for i in range(simulation_days*48):
-            
-            #if new day
-            if i%48==0:
-                get_today_usage()
-                
-            time = math.floor(i/2)%24
-
-            if i%2==0:
-                diff = solar_charge(time)
-            else:
-                diff = village_discharge(time)
-
-            #update battery charges
-            del_charge2(diff,cell)
-
-        collect_data(cell,panel,battery.penalty_village,battery.penalty_panels)
                 
                 
         

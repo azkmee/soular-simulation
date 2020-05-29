@@ -111,6 +111,7 @@ class Battery():
         return self.charge
 
 new_batt = Battery(10,50)
+new_batt.score_charge()
 new_batt.charge_list(59)
 
 '''
