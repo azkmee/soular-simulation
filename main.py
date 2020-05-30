@@ -3,21 +3,22 @@ import numpy as np
 import random
 from matplotlib.animation import FuncAnimation
 from house_multiapp import House
-from battery_score import Battery
+from battery import Battery
 from csv import writer
 import math
 from statistics import mean
 
 import sys
 
-num_cell = 20
+num_cell = 10
 default_charge = 50 #state of charge
-num_house = 3
+num_house = 20
 
-number_panels = 3
-perhour_charge = 200*number_panels
+number_panels = 4
+panel_voltage = 24
+perhour_charge = 200/panel_voltage #change to current
 
-#cell_charge = [default_charge for i in range(num_cell)]
+cell_charge = [default_charge for i in range(num_cell)]
 
 #for charging
 day_time = [9,10,11,12,13,14,15,16]
@@ -54,43 +55,24 @@ def get_today_usage():
 def randomness():
     return random.randint(-10,10)
 
-'''#method of charging - charging one charge at a time
-'implement diff charging'
-def del_charge(charge):
-
-    if charge < 0:
-        active_cell = cell_charge.index(max(cell_charge))
-        change = -1
-    else:
-        active_cell = cell_charge.index(min(cell_charge))
-        change = 1
-
-    for i in range(abs(charge)):
-        cell_charge[active_cell] = cell_charge[active_cell] + change
-
-        if active_cell == num_cell-1:
-            active_cell = 0
-        else: active_cell += 1
-    return cell_charge
-'''
 #charge based on scoring
-def del_charge2(charge,cell_spread):
+def del_charge2(charge):
     global battery
     
     #discharging
     if (charge<0):
-        battery.discharging(cell_spread,abs(charge))
+        battery.discharging(abs(charge))
 
     #charging
     elif (charge>0):
-        battery.charging(cell_spread,abs(charge))
+        battery.charging(abs(charge))
     
     return battery.get_charge()
 
 def solar_charge(t): #insert formula of solar charging based on t
     
     if (t in day_time):
-        return perhour_charge +randomness()
+        return perhour_charge * number_panels#+ randomness()
     else: return 0
 
 #get demand at time t
@@ -141,15 +123,15 @@ def animation_frame(i):
     if (i==(48*5)): sys.exit()
 
     
-#initialize houses
+#initialize houses and batteries
 init_house(num_house)
-init_excel()
+init_batt(num_cell)
 
-cell_range = range(1,51)
-panel_range = range(1,15)
-
-simulation_days = 5
-
+fig = plt.figure()
+bar_chart = plt.bar(np.arange(num_cell),cell_charge, align='center',alpha=0.5)
+plt.ylim(0,100)
+anim = FuncAnimation(fig, animation_frame, blit=False ,interval= 1)
+plt.show()
 
                 
                 

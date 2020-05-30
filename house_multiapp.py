@@ -1,3 +1,14 @@
+'''
+To use this object, call object House with
+argument (size of family)
+
+function get_demand can be called without any
+arguments. Function returns a list of hourly 
+demand of current in ampere.
+
+house = House(5)
+house.get_demand()
+'''
 import random
 import numpy as np
 
@@ -51,12 +62,11 @@ class House:
         for i in range(0,24):
             for j in range(no_app):
                 total[i] += demand[j,i]
-        print(total)
+#       print(total)
         return total
 
 
-house = House(5)
-house.get_demand()
+
 
 '''
 future development
