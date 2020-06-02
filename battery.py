@@ -54,6 +54,7 @@ class Battery():
                     break
                 
         self.charge += np.array(del_charge)/self.capacity*100
+        self.penalty_panels += np.array([int(i>self.max_charge) for i in self.charge])
 
 
     def discharging(self,charges):
@@ -82,9 +83,11 @@ class Battery():
                     break
 
         self.charge -= np.array(del_charge)/self.capacity*100
-
-    def get_charge(self):
-        return self.charge
+        self.penalty_village += np.array([int(i<self.min_charge) for i in self.charge])
+    
+    def get_charge_penalties(self):
+        return (self.charge,self.penalty_village,self.penalty_panels)
+ 
 
 new_batt = Battery(10,50)
 new_batt.discharging(60)

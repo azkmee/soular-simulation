@@ -10,11 +10,11 @@ from statistics import mean
 
 import sys
 
-num_cell = 10
+num_cell = 25
 default_charge = 50 #state of charge
 num_house = 20
 
-number_panels = 4
+number_panels = 8
 panel_voltage = 24
 perhour_charge = 200/panel_voltage #change to current
 
@@ -38,7 +38,7 @@ def init_batt(cell):
     
     battery = Battery(cell,charge_init=default_charge)
 
-#update the demand for electricity today
+#update the demand for electricity today in today_charge
 def get_today_usage():
     global today_charge
     
@@ -67,12 +67,12 @@ def del_charge2(charge):
     elif (charge>0):
         battery.charging(abs(charge))
     
-    return battery.get_charge()
+    #return battery.get_charge_penalties()
 
-def solar_charge(t): #insert formula of solar charging based on t
+def solar_charge(t,panels): #insert formula of solar charging based on t
     
     if (t in day_time):
-        return perhour_charge * number_panels#+ randomness()
+        return perhour_charge * panels#+ randomness()
     else: return 0
 
 #get demand at time t
@@ -80,25 +80,13 @@ def village_discharge(t):
     #print(today_charge[t])
     return int(today_charge[t])*-1
 
-#export data to csv containing config and penalty
-def collect_data(cell,panel,penalty1,penalty2):
-    filename = 'test.csv'
 
-    with open(filename,'a+',newline='')as write_obj:
-        write=writer(write_obj)
-        write.writerow([cell,panel,mean(penalty1),mean(penalty2)])
-
-def init_excel():
-    filename = 'test.csv'
-
-    with open(filename,'w',newline='')as write_obj:
-        write=writer(write_obj)
-        write.writerow(['cells','panels','village penalty','panels_panelty'])
 
 #for animation function
 #each our is per 2 frame. One frame for charging, the other for discharging
 def animation_frame(i):
-    
+    global bar_chart
+
     #if new day
     if i%48==0:
         get_today_usage()
@@ -108,32 +96,79 @@ def animation_frame(i):
     #discharge = village_discharge(time)
     #diff = charge + discharge
     if i%2==0:
-        diff = solar_charge(time)
+        diff = solar_charge(time,number_panels)
     else:
         diff = village_discharge(time)
 
     #update cell charge
-    updated_charge = del_charge2(diff)
+    updated_charge, p_village, p_panels = del_charge2(diff)
     #export to csv
     #collect_data(updated_charge)
     print(time, updated_charge)
+    print(p_village,p_panels)
     for k, b in enumerate(bar_chart):
         b.set_height(updated_charge[k])
 
-    if (i==(48*5)): sys.exit()
+    if (i==(48*20)): sys.exit()
 
+def compile_(self, ncell, npanels):
+    global battery
+    init_house(num_house)
+    init_batt(ncell)
+
+    interval = 20 * 48
+
+    for i in range(interval):
+        if i%48 == 0:
+            get_today_usage()
+        
+        time = math.floor(i/2)%24
+
+        if time%2 == 0:
+            diff = solar_charge(time, npanels)
+        else:
+            diff = village_discharge(time)
+        del_charge2(diff)
+
+    updated_charge, p_village, p_panels = battery.get_charge_penalties()
     
-#initialize houses and batteries
+    print (p_village,p_panels)
+
+
+def main():
+    global bar_chart    
+    #initialize houses and batteries
+    init_house(num_house)
+    init_batt(num_cell)
+
+    fig = plt.figure()
+    bar_chart = plt.bar(np.arange(num_cell),cell_charge, align='center',alpha=0.5)
+    plt.ylim(0,100)
+    anim = FuncAnimation(fig, animation_frame, blit=False ,interval= 1)
+    plt.show()
+
+
 init_house(num_house)
 init_batt(num_cell)
 
-fig = plt.figure()
-bar_chart = plt.bar(np.arange(num_cell),cell_charge, align='center',alpha=0.5)
-plt.ylim(0,100)
-anim = FuncAnimation(fig, animation_frame, blit=False ,interval= 1)
-plt.show()
+interval = 20 * 48
 
-                
+for i in range(interval):
+    if i%48 == 0:
+        get_today_usage()
+    
+    time = math.floor(i/2)%24
+
+    if time%2 == 0:
+        diff = solar_charge(time, number_panels)
+    else:
+        diff = village_discharge(time)
+    del_charge2(diff)
+
+updated_charge, p_village, p_panels = battery.get_charge_penalties()
+
+print (p_village,p_panels)
+            
                 
         
 '''
