@@ -10,11 +10,11 @@ from statistics import mean
 
 import sys
 
-num_cell = 25
+num_cell = 5
 default_charge = 50 #state of charge
-num_house = 20
+num_house = 10
 
-number_panels = 8
+number_panels = 3
 panel_voltage = 24
 perhour_charge = 200/panel_voltage #change to current
 
@@ -111,7 +111,7 @@ def animation_frame(i):
 
     if (i==(48*20)): sys.exit()
 
-def compile_(self, ncell, npanels):
+def compile_(ncell, npanels):
     global battery
     init_house(num_house)
     init_batt(ncell)
@@ -132,7 +132,7 @@ def compile_(self, ncell, npanels):
 
     updated_charge, p_village, p_panels = battery.get_charge_penalties()
     
-    print (p_village,p_panels)
+    return p_village,p_panels
 
 
 def main():
@@ -147,29 +147,10 @@ def main():
     anim = FuncAnimation(fig, animation_frame, blit=False ,interval= 1)
     plt.show()
 
-
-init_house(num_house)
-init_batt(num_cell)
-
-interval = 20 * 48
-
-for i in range(interval):
-    if i%48 == 0:
-        get_today_usage()
-    
-    time = math.floor(i/2)%24
-
-    if time%2 == 0:
-        diff = solar_charge(time, number_panels)
-    else:
-        diff = village_discharge(time)
-    del_charge2(diff)
-
-updated_charge, p_village, p_panels = battery.get_charge_penalties()
-
-print (p_village,p_panels)
-            
-                
+if __name__ == '__main__':
+    a,b = compile_(ncell=1,npanels=2)
+    print(a.b)
+    #main()                
         
 '''
 future work

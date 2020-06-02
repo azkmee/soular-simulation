@@ -1,6 +1,7 @@
-from chart import compile
+from chart import compile_
 from csv import writer
 import numpy as np
+from statistics import mean
 
 sim_days = 20
 sim_per_config = 5
@@ -27,9 +28,10 @@ def main():
     for panels in range(1,20):
         for batt in range(1,50):
             p_village = np.full(batt,0)
-            p_panels = np.full(panels,0)
-            for i in range(sim_per_config):
-                p_v, p_p = compile(batt,panels,20)
+            p_panels = np.full(batt,0)
+            for _ in range(sim_per_config):
+                p_v, p_p = compile_(batt,panels)
+                print(panels, batt, p_panels, p_p, p_v)
                 p_village += p_v
                 p_panels += p_p
 
