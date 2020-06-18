@@ -20,11 +20,11 @@ perhour_charge = 200*number_panels
 cell_charge = [default_charge for i in range(num_cell)]
 
 #for charging
-day_time = [9,10,11,12,13,14,15,16]
+#day_time = [9,10,11,12,13,14,15,16]
 
-houses = {}
+#houses = {}
 
-today_charge = []
+#today_charge = []
 
 #initialize house and battery at the start
 def init_house(num_house):
@@ -38,6 +38,7 @@ def init_batt(cell):
     battery = Battery(cell,charge_init=default_charge)
 
 #update the demand for electricity today
+#NO NEED
 def get_today_usage():
     global today_charge
     
@@ -110,19 +111,24 @@ def collect_data(step_charge):
 def animation_frame(i):
     
     #if new day
+
     if i%48==0:
         get_today_usage()
         
     time = math.floor(i/2)%24
+
     #charge = solar_charge(time)
     #discharge = village_discharge(time)
     #diff = charge + discharge
+
     if i%2==0:
         diff = solar_charge(time)
     else:
         diff = village_discharge(time)
 
     #update cell charge
+    today_charge = solar_charge()
+    diff = today_charge - 
     updated_charge = del_charge2(diff)
     #export to csv
     #collect_data(updated_charge)
