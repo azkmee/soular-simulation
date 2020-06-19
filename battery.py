@@ -12,6 +12,7 @@ new_batt.discharging(discharges)
 
 to get battery details
 new_batt.get_battery_details()
+returns charge array and penalty array
 '''
 
 #SET UPPER LIMIT done
@@ -91,18 +92,20 @@ class Battery():
 #               print('remain=',remain)
                 if remain==0:
                     break
-
+        
+        #update charge
         self.charge -= np.array(del_charge)
+        self.charge = [max(i,0) for i in self.charge]
         self.penalty_village += np.array([int(i<self.min_charge) for i in self.charge])
     
     def get_battery_details(self):
         soc = [float(i/self.capacity) for i in self.charge]
         print(soc, self.penalty_village)
-        return (self.charge,self.penalty_village)
+        return (soc,self.penalty_village)
  
-
+'''
 new_batt = Battery(10,50)
 new_batt.charging(700)
 new_batt.get_battery_details()
-
+'''
 
