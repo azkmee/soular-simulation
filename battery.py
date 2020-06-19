@@ -100,7 +100,7 @@ class Battery():
     
     def get_battery_details(self):
         soc = [float(i/self.capacity) for i in self.charge]
-        print(soc, self.penalty_village)
+        #print(soc, self.penalty_village)
         return (soc,self.penalty_village)
  
 '''

@@ -16,10 +16,11 @@ days_sim = 365
 
 num_cell = 33
 default_charge = 0.50 #state of charge in %
-num_house = 20
+num_house = 4
 
-number_panels = 3
-panel_power_h = 100
+number_panels = 40
+sun_h = 5
+panel_power_h = 2.4/sun_h * 1.6#2.4 kwh/m2 from report
 
 cell_charge = [default_charge for i in range(num_cell)]
 
@@ -80,7 +81,7 @@ def del_charge2(charge):
 def solar_charge(): #insert formula of solar charging based on t
     #assume 5 hrs of charging from 11-1600hrs with power harvested as percentage
     #of max capacity (efficiency accounted for)
-    irr = [0.3, 0.3, 0.3, 0.2, 0.2]
+    irr = np.array([0.3, 0.3, 0.3, 0.2, 0.2])
 
     return sum(irr) * panel_power_h
 
@@ -88,6 +89,7 @@ def solar_charge(): #insert formula of solar charging based on t
 #GET DAY DEMAND, FROM RANDOM VAR
 #can incorporate with the analysis
 #hard code var first, to include with *arg later
+#calculated in kWh q
 import scipy.stats as st
 def village_discharge():
     c = 0.4275538254258593
@@ -121,10 +123,10 @@ def animation_frame(i):
         diff = village_discharge(time)
     '''
     #update cell charge
-    today_charge = solar_charge()
+    today_charge = sum([solar_charge() for _ in range(number_panels)])
     today_discharge = sum([village_discharge() for j in range(num_house)])
     diff = today_charge - today_discharge
-    print(diff)
+    print(today_charge, today_discharge,diff)
     updated_charge, p_village = del_charge2(diff)
     #export to csv
     #collect_data(updated_charge)
@@ -136,12 +138,19 @@ def animation_frame(i):
 #NOT YET USED
 def compile_(ncell, npanels):
     global battery
-    init_house(num_house)
     init_batt(ncell)
 
-    interval = 20 * 48
+    #interval = 20 * 48
+    
 
-    for i in range(interval):
+    for i in range(days_sim):
+        today_charge = solar_charge()
+        today_discharge = sum([village_discharge() for j in range(num_house)])
+        diff = today_charge - today_discharge
+        print(diff)
+        updated_charge, p_village = del_charge2(diff)
+
+
         if i%48 == 0:
             get_today_usage()
         
