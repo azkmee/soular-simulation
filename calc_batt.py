@@ -8,10 +8,12 @@
 
 import math 
 
-def get_batt(daily_use, days_idle, min_charge, batt_cap, solar_power, eff_sys = 0.8, eff_solar = 0.8):
-    total_energy_needed = daily_use * days_idle / eff_sys / (1-min_charge)
-    number_batt = total_energy_needed/batt_cap
+def get_batt(daily_use, days_idle, min_charge, batt_cap, solar_power, eff_sys = 0.8, eff_solar = 0.3):
+    total_energy_needed = daily_use * (days_idle+1) / eff_sys / (1-min_charge)
+    number_batt = total_energy_needed/(batt_cap * 12)
     number_solar = total_energy_needed / eff_solar / (solar_power * 5) #hrs of sun
 
     return (math.ceil(number_batt), math.ceil(number_solar))
 
+
+print(get_batt(8000,0,0.5,112,3.84))

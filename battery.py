@@ -22,7 +22,7 @@ returns charge array and penalty array
 
 class Battery():
     def __init__(self,num_cell,charge_init,min_charge=0.30,max_charge=0.95):
-        self.capacity = 125 #FIND IN WH
+        self.capacity = 125 * 12 #Ah x V = watthr
 
         self.min_charge = min_charge * self.capacity
         self.max_charge = max_charge * self.capacity #or full?

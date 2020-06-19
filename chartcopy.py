@@ -14,11 +14,11 @@ import sys
 #PER DAY SIM
 days_sim = 365
 
-num_cell = 33
+num_cell = 10
 default_charge = 0.50 #state of charge in %
 num_house = 4
 
-number_panels = 40
+number_panels = 38
 sun_h = 5
 panel_power_h = 2.4/sun_h * 1.6#2.4 kwh/m2 from report
 
@@ -32,34 +32,11 @@ cell_charge = [default_charge for i in range(num_cell)]
 #today_charge = []
 
 #initialize house and battery at the start
-#NO NEED
-def init_house(num_house):
-    for i in range(num_house):
-        fam_size = random.randint(1,5)
-        houses[i] = House(fam_size)
 
 def init_batt(cell):
     global battery
     
     battery = Battery(cell,charge_init=default_charge)
-
-#update the demand for electricity today in today_charge
-#NOT NEEDED AS NO NEED TO GET ARRAY OF HOURLY CHARGES
-def get_today_usage():
-    global today_charge
-    
-    #initialize array for charge
-    collect_charge = np.zeros((num_house,24))
-
-    #collect charge per house per hour
-    for i in range(len(houses)):
-        collect_charge[i] = houses[i].get_demand()
-        
-    #sum all the charges required from all houses at each hour
-    today_charge = np.sum(collect_charge,axis=0)
-
-def randomness():
-    return random.randint(-10,10)
 
 #charge based on scoring
 def del_charge2(charge):
@@ -141,32 +118,18 @@ def compile_(ncell, npanels):
     init_batt(ncell)
 
     #interval = 20 * 48
-    
 
     for i in range(days_sim):
-        today_charge = solar_charge()
+        today_charge = sum([solar_charge() for _ in range(npanels)])
         today_discharge = sum([village_discharge() for j in range(num_house)])
         diff = today_charge - today_discharge
-        print(diff)
         updated_charge, p_village = del_charge2(diff)
 
-
-        if i%48 == 0:
-            get_today_usage()
-        
-        time = math.floor(i/2)%24
-
-        if time%2 == 0:
-            diff = solar_charge(time, npanels)
-        else:
-            diff = village_discharge(time)
-        del_charge2(diff)
-
-    updated_charge, p_village, p_panels = battery.get_charge_penalties()
+    _, penalty = battery.get_battery_details()
     
-    return p_village,p_panels
+    return penalty
+    #returns penalty in array
 
-#def get_day_charges():
     
 
 
