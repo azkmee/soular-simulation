@@ -14,11 +14,11 @@ import sys
 #PER DAY SIM
 days_sim = 365
 
-num_cell = 10
+num_cell = 18
 default_charge = 0.50 #state of charge in %
 num_house = 4
 
-number_panels = 38
+number_panels = 69
 sun_h = 5
 panel_power_h = 2.4/sun_h * 1.6#2.4 kwh/m2 from report
 
@@ -104,7 +104,8 @@ def animation_frame(i):
     today_discharge = sum([village_discharge() for j in range(num_house)])
     diff = today_charge - today_discharge
     print(today_charge, today_discharge,diff)
-    updated_charge, p_village = del_charge2(diff)
+    updated_charge, p_village, p_p = del_charge2(diff)
+    print(p_p)
     #export to csv
     #collect_data(updated_charge)
     for k, b in enumerate(bar_chart):
@@ -112,8 +113,10 @@ def animation_frame(i):
 
     if (i==days_sim): sys.exit()
 
+#low_var_demand = [village_discharge() for i in range(days_sim)]
+
 #NOT YET USED
-def compile_(ncell, npanels):
+def compile_(ncell, npanels, demand_low_var):
     global battery
     init_batt(ncell)
 
@@ -121,13 +124,13 @@ def compile_(ncell, npanels):
 
     for i in range(days_sim):
         today_charge = sum([solar_charge() for _ in range(npanels)])
-        today_discharge = sum([village_discharge() for j in range(num_house)])
+        today_discharge = demand_low_var[i] #house declare from sourc of demand
         diff = today_charge - today_discharge
-        updated_charge, p_village = del_charge2(diff)
+        del_charge2(diff)
 
-    _, penalty = battery.get_battery_details()
+    _, penalty1, penalty2 = battery.get_battery_details()
     
-    return penalty
+    return (_,penalty1, penalty2)
     #returns penalty in array
 
     
