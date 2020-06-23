@@ -7,8 +7,8 @@ import seaborn as sns
 import pandas as pd
 import scipy.stats as st
 
-sim_days = 20
-sim_per_config = 5
+sim_days = 365 * 3
+#sim_per_config = 5
 price_battery = 76
 price_panel = 400
 
@@ -16,14 +16,14 @@ price_panel = 400
 
 #export data to csv containing config and penalty
 def collect_data(cell,panel,penalty1, penalty2):
-    filename = 'test.csv'
+    filename = 'test3.csv'
     cost = cell*price_battery + panel*price_panel
     with open(filename,'a+',newline='') as write_obj:
         write=writer(write_obj)
-        write.writerow([cell,panel,sum(penalty1),sum(penalty2),cost])
+        write.writerow([cell,panel,mean(penalty1),mean(penalty2),cost])
 
 def init_excel():
-    filename = 'test.csv'
+    filename = 'test3.csv'
 
     with open(filename,'w',newline='') as write_obj:
         write=writer(write_obj)
@@ -36,7 +36,7 @@ def low_var_demand_gen():
     s = 0.3170056615664818
     loc = -3.185672416927618
     scale = 8.550998664138763
-    for i in range(365):
+    for i in range(sim_days):
         demand.append(sum(st.powerlognorm.rvs(c=c, s=s, loc=loc, scale=scale, size=num_house)))
     return demand
 
@@ -47,12 +47,12 @@ def main():
     #try to cut down the sim
     p_store = np.ones(10) * 10
 
-    for panels in range(30,90, 5):
-        for batt in range(20,66,5):
+    for panels in range(40,50):
+        for batt in range(10,20):
             p1 = np.full(batt,0.0)
             p2 = np.full(batt,0.0)
             #for _ in range(sim_per_config):
-            cha, p_v, p_p = compile_(batt,panels, d)
+            cha, p_v, p_p = compile_(batt,panels, d, sim_days)
             print(panels, batt, cha, p_p)
             #p1 += p_v
             #p2 += p_p

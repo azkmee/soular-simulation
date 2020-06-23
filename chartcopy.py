@@ -12,13 +12,13 @@ import scipy.stats as st
 import sys
 
 #PER DAY SIM
-days_sim = 365
+days_sim = 365 * 3
 
-num_cell = 18
+num_cell = 16
 default_charge = 0.50 #state of charge in %
 num_house = 4
 
-number_panels = 69
+number_panels = 42
 sun_h = 5
 panel_power_h = 2.4/sun_h * 1.6#2.4 kwh/m2 from report
 
@@ -116,13 +116,13 @@ def animation_frame(i):
 #low_var_demand = [village_discharge() for i in range(days_sim)]
 
 #NOT YET USED
-def compile_(ncell, npanels, demand_low_var):
+def compile_(ncell, npanels, demand_low_var, days_sim_):
     global battery
     init_batt(ncell)
 
     #interval = 20 * 48
 
-    for i in range(days_sim):
+    for i in range(days_sim_):
         today_charge = sum([solar_charge() for _ in range(npanels)])
         today_discharge = demand_low_var[i] #house declare from sourc of demand
         diff = today_charge - today_discharge
