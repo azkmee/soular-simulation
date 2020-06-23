@@ -9,21 +9,21 @@ import scipy.stats as st
 
 sim_days = 365 * 3
 #sim_per_config = 5
-price_battery = 76
+price_battery = 74
 price_panel = 400
 
 ##see if can use df here
 
 #export data to csv containing config and penalty
 def collect_data(cell,panel,penalty1, penalty2):
-    filename = 'test3.csv'
+    filename = 'test.csv'
     cost = cell*price_battery + panel*price_panel
     with open(filename,'a+',newline='') as write_obj:
         write=writer(write_obj)
         write.writerow([cell,panel,mean(penalty1),mean(penalty2),cost])
 
 def init_excel():
-    filename = 'test3.csv'
+    filename = 'test.csv'
 
     with open(filename,'w',newline='') as write_obj:
         write=writer(write_obj)
@@ -47,8 +47,8 @@ def main():
     #try to cut down the sim
     p_store = np.ones(10) * 10
 
-    for panels in range(40,50):
-        for batt in range(10,20):
+    for panels in range(40,56):
+        for batt in range(25,45):
             p1 = np.full(batt,0.0)
             p2 = np.full(batt,0.0)
             #for _ in range(sim_per_config):
