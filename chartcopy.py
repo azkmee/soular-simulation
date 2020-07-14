@@ -115,7 +115,6 @@ def animation_frame(i):
 
 #low_var_demand = [village_discharge() for i in range(days_sim)]
 
-#NOT YET USED
 def compile_(ncell, npanels, demand_low_var, days_sim_):
     global battery
     init_batt(ncell)
