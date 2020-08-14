@@ -8,21 +8,28 @@ from csv import writer
 import math
 from statistics import mean
 import scipy.stats as st
-
 import sys
+import pandas as pd
 
 #PER DAY SIM
-days_sim = 365 * 3
+days_sim = 24*365
 
-num_cell = 16
-default_charge = 0.50 #state of charge in %
+num_cell = 100
+x = 0.50 #state of charge in %
 num_house = 4
-
-number_panels = 42
+default_charge = 0.3
+number_panels = 85
 sun_h = 5
-panel_power_h = 2.4/sun_h * 1.6#2.4 kwh/m2 from report
+panel_power_h = 0.400 #2.4/sun_h * 1.6#2.4 kwh/m2 from report
 
 cell_charge = [default_charge for i in range(num_cell)]
+solar_efficiency = np.zeros(24)
+solar_efficiency[11]=0.8
+solar_efficiency[12]=0.8
+solar_efficiency[13]=0.8
+solar_efficiency[14]=0.8
+solar_efficiency[15]=0.8
+
 
 #for charging
 #day_time = [9,10,11,12,13,14,15,16]
@@ -55,6 +62,7 @@ def del_charge2(charge):
 
 #REPLACE WITH EXPECTED CHARGE FROM 5HOURS OF CHARGING(CAN VARY EFFICIENCY/IRRIDIANCE)
 
+##if data can be installed for month then its better,
 def solar_charge(): #insert formula of solar charging based on t
     #assume 5 hrs of charging from 11-1600hrs with power harvested as percentage
     #of max capacity (efficiency accounted for)
@@ -82,32 +90,48 @@ def village_discharge():
 
 #for animation function
 #EVERY FRAME IS PER DAY
+
+def demand_gen_multi_dist():
+    # i=0
+    demand = []
+    for year in range(5):
+        for month in range(12):
+            for day in range(30):
+                for hour in range(24):
+                    _, dist, params = data_dist.iloc[2*month+hour]
+                    parame = [float(i) for i in params.strip('[]').split(',')]
+                    arg = parame[:-2]
+                    loc = parame[-2]
+                    scale = parame[-1]
+
+                    
+                    eqn = eval('st.' + dist +'.rvs(loc=loc, scale=scale, *arg)')
+                    demand.append(eqn)
+    return(demand)
+
+data_dist = pd.read_csv('data_dist_20_A.csv')
+demand = demand_gen_multi_dist()
+
 def animation_frame(i):
     global bar_chart
 
-    #if new day NO NEED
-    #if i%48==0:
-        #get_today_usage()
-        
-    #time = math.floor(i/2)%24
-    #charge = solar_charge(time)
-    #discharge = village_discharge(time)
-    #diff = charge + discharge
-    '''
-    if i%2==0:
-        diff = solar_charge(time,number_panels)
-    else:
-        diff = village_discharge(time)
-    '''
+
     #update cell charge
-    today_charge = sum([solar_charge() for _ in range(number_panels)])
-    today_discharge = sum([village_discharge() for j in range(num_house)])
-    diff = today_charge - today_discharge
-    print(today_charge, today_discharge,diff)
-    updated_charge, p_village, p_p = del_charge2(diff)
-    print(p_p)
-    #export to csv
-    #collect_data(updated_charge)
+    # today_charge = sum([solar_charge() for _ in range(number_panels)])
+    # today_discharge = sum([village_discharge() for j in range(num_house)])
+    # diff = today_charge - today_discharge
+    # print(today_charge, today_discharge,diff)
+    # updated_charge, p_village, p_p = del_charge2(diff)
+    # print(p_p)
+
+    time = i%24
+    hour_charge = solar_efficiency[time] * number_panels * panel_power_h
+    hour_discharge = demand[i] 
+    diff = hour_charge - hour_discharge
+    updated_charge,_, _ = del_charge2(diff)
+    print(time, hour_charge, hour_discharge)
+
+
     for k, b in enumerate(bar_chart):
         b.set_height(updated_charge[k])
 
@@ -122,10 +146,12 @@ def compile_(ncell, npanels, demand_low_var, days_sim_):
     #interval = 20 * 48
 
     for i in range(days_sim_):
-        today_charge = sum([solar_charge() for _ in range(npanels)])
-        today_discharge = demand_low_var[i] #house declare from sourc of demand
-        diff = today_charge - today_discharge
+        time = i%24
+        hour_charge = solar_efficiency[time] * npanels * panel_power_h
+        hour_discharge = demand_low_var[i] 
+        diff = hour_charge - hour_discharge
         del_charge2(diff)
+        #print(diff)
 
     _, penalty1, penalty2 = battery.get_battery_details()
     

@@ -1,4 +1,4 @@
-from chartcopy import compile_
+from per_config_run import compile_
 from csv import writer
 import numpy as np
 from statistics import mean
@@ -6,74 +6,70 @@ import time
 import seaborn as sns
 import pandas as pd
 import scipy.stats as st
+import math
 
-sim_days = 365 * 3
-#sim_per_config = 5
+year_sim = 1
+sim_days = 360 * 24 * year_sim
 price_battery = 74
-price_panel = 400
-price_per_kwh = 26.13
+price_panel = 720 #1.80/w
+price_per_kwh = 0.2613
 
-##see if can use df here
+#file to get distribution from
+data_dist = pd.read_csv('data_dist_20_B.csv')
+#output file name
+filename = 'output_test.csv'
+num_house = 5
 
 #export data to csv containing config and penalty
 def collect_data(cell,panel,penalty1, penalty2, sum_d):
-    filename = 'test2.csv'
     cost = cell*price_battery + panel*price_panel
     with open(filename,'a+',newline='') as write_obj:
         write=writer(write_obj)
         write.writerow([cell,panel,mean(penalty1),mean(penalty2),cost, sum_d*price_per_kwh])
 
 def init_excel():
-    filename = 'test2.csv'
-
     with open(filename,'w',newline='') as write_obj:
         write=writer(write_obj)
         write.writerow(['cells','panels','penalty_v', 'penalty_p', 'cost', 'sum_d'])
 
-def low_var_demand_gen():
+def demand_gen_multi_dist():
+    # i=0
     demand = []
-    num_house = 5
-    c = 0.4275538254258593
-    s = 0.3170056615664818
-    loc = -3.185672416927618
-    scale = 8.550998664138763
-    for i in range(sim_days):
-        demand.append(sum(st.powerlognorm.rvs(c=c, s=s, loc=loc, scale=scale, size=num_house)))
-    return demand
+    for year in range(year_sim):
+        for month in range(12):
+            for day in range(30):   
+                for hour in range(24):
+                    _, dist, params = data_dist.iloc[2*month+hour]
+                    parame = [float(i) for i in params.strip('[]').split(',')]
+                    arg = parame[:-2]
+                    loc = parame[-2]
+                    scale = parame[-1]
+
+                    
+                    eqn = eval('st.' + dist +'.rvs(loc=loc, scale=scale, *arg, size=num_house)')
+                    while math.isinf(sum(eqn)):
+                        eqn = eval('st.' + dist +'.rvs(loc=loc, scale=scale, *arg, size=num_house)')
+                    demand.append(sum(eqn))
+    return(demand)
 
 def main():
-    #global sim_per_config
     init_excel()
-    for i in range(3):
-        #get new set of demand rv for every run
-        d = low_var_demand_gen()
-        #try to cut down the sim
-        #p_store = np.ones(10) * 10
+    sim_run = 1
+    for i in range(sim_run):
+        d = demand_gen_multi_dist()
 
-        for panels in range(40,56):
-            for batt in range(35,50):
+#two options for for loop, 1. wider range. 2. narrower range after initial analysis
+
+        for panels in range(20,101,20):
+            for batt in range(70,251,40):
+        # for panels in range(40,80, 5):
+        #     for batt in range(70, 201, 10):
                 p1 = np.full(batt,0.0)
                 p2 = np.full(batt,0.0)
-                #for _ in range(sim_per_config):
                 cha, p_v, p_p = compile_(batt,panels, d, sim_days)
                 print(panels, batt, cha, p_p)
-                #p1 += p_v
-                #p2 += p_p
-
-                #average penalty in the config
-                #p1 = [j/sim_per_config for j in p1]
-                #p2 = [j/sim_per_config for j in p2]
 
                 collect_data(batt,panels,p_v,p_p, sum(d))
-
-    '''
-    time.sleep(5)
-    data = pd.read_csv('test.csv')
-    print(len(data))
-    data['sum'] = 2*data['penalty'] + data['cost']
-    data1 = data.pivot('cells','panels','sum')
-    sns.heatmap(data1)
-    '''
 
 if __name__ == '__main__':
     main()
