@@ -9,4 +9,5 @@ per_config_run.py - simulation run that takes in the configuration and return pe
 configuration.py - compile penalties for every configuration ran.
 
 To run this program, you need an input file which contains the distribution of energy distribution for each hour per month in an excel file. 
-This can be obtained by fitting a distribution curve to existing data
+This can be obtained by fitting a distribution curve to existing data. That can be found here: https://www.kaggle.com/muhdazmi2/london-electric/notebook
+
