@@ -2,9 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 from matplotlib.animation import FuncAnimation
-from house_multiapp import House
 from battery import Battery
-from csv import writer
 import math
 from statistics import mean
 import scipy.stats as st
